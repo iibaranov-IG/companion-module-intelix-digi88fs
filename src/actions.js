@@ -1,19 +1,12 @@
 module.exports = function (self) {
 	self.setActionDefinitions({
-		sample_action: {
-			name: 'My First Action',
-			options: [
-				{
-					id: 'num',
-					type: 'number',
-					label: 'Test',
-					default: 5,
-					min: 0,
-					max: 100,
-				},
-			],
-			callback: async (event) => {
-				console.log('Hello world!', event.options.num)
+		refresh_inventory: {
+			name: 'Refresh read-only inventory',
+			description: 'Reads supported MM-4D device and channel state without changing the processor',
+			options: [],
+			callback: async () => {
+				if (!self.client?.ready) throw new Error('TASCAM DCP session is not connected')
+				await self.client.refreshInventory()
 			},
 		},
 	})

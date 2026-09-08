@@ -1,15 +1,17 @@
 {
-	"name": "your-module-name",
+	"name": "tascam-dcp",
 	"version": "0.1.0",
 	"main": "src/main.js",
 	"scripts": {
 		"format": "prettier -w .",
+		"format:check": "prettier -c .",
+		"test": "node --test test/*.test.js",
 		"package": "companion-module-build"
 	},
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/bitfocus/companion-module-your-module-name.git"
+		"url": "git+https://github.com/iibaranov-IG/companion-module-tascam-dcp.git"
 	},
 	"engines": {
 		"node": "^22.20",
