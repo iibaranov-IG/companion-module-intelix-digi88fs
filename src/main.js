@@ -1,5 +1,4 @@
-const { InstanceBase, InstanceStatus, Regex, TCPHelper, runEntrypoint } = require('@companion-module/base')
-const UpgradeScripts = require('./upgrades')
+const { InstanceBase, InstanceStatus, Regex, TCPHelper } = require('@companion-module/base')
 const UpdateActions = require('./actions')
 const UpdateFeedbacks = require('./feedbacks')
 const UpdateVariableDefinitions = require('./variables')
@@ -116,4 +115,5 @@ class ModuleInstance extends InstanceBase {
 	}
 }
 
-runEntrypoint(ModuleInstance, UpgradeScripts)
+// module-base 2 loads the instance constructor as the default CommonJS export.
+module.exports = ModuleInstance
