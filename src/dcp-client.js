@@ -137,7 +137,9 @@ class DcpClient {
 		if (line.startsWith('OK SET')) {
 			const values = parseParameters(line.slice(6))
 			const cid = values.CID
-			this.completeActive(cid, this.active?.updates || {})
+			const updates = this.active?.updates || {}
+			this.onState(updates)
+			this.completeActive(cid, updates)
 			return
 		}
 

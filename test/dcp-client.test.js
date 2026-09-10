@@ -113,6 +113,7 @@ test('updates state from unsolicited NOTIFY messages', () => {
 
 test('serializes a SET command, then updates state after its confirmation', async () => {
 	const { client, socket, states } = makeClient()
+	client.connect()
 	client.ready = true
 	const setting = client.set('ANLGIN/2/FADER', '-6.0')
 	await nextTick()
