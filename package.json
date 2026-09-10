@@ -1,5 +1,5 @@
 {
-	"name": "tascam-dcp",
+	"name": "companion-module-intelix-digi88fs",
 	"version": "0.1.0",
 	"main": "src/main.js",
 	"scripts": {
@@ -11,7 +11,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/iibaranov-IG/companion-module-tascam-dcp.git"
+		"url": "git+https://github.com/iibaranov-IG/companion-module-intelix-digi88fs.git"
 	},
 	"engines": {
 		"node": "^22.20",

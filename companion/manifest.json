@@ -1,9 +1,9 @@
 {
 	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
 	"type": "connection",
-	"id": "tascam-dcp",
-	"name": "TASCAM DCP",
-	"shortname": "TASCAM DCP",
+	"id": "intelix-digi88fs",
+	"name": "Intelix DIGI-88FS",
+	"shortname": "Intelix 8x8",
 	"description": "Read-only monitoring for TASCAM DCP-series processors",
 	"version": "0.0.0",
 	"license": "MIT",

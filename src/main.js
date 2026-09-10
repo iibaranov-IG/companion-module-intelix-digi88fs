@@ -1,120 +1,18 @@
-const { InstanceBase, InstanceStatus, Regex, TCPHelper } = require('@companion-module/base')
-const UpdateActions = require('./actions')
-const UpdateFeedbacks = require('./feedbacks')
-const UpdateVariableDefinitions = require('./variables')
-const { DcpClient } = require('./dcp-client')
-
-class ModuleInstance extends InstanceBase {
-	constructor(internal) {
-		super(internal)
-		this.client = undefined
-		this.state = new Map()
+const { InstanceBase, InstanceStatus, Regex, TCPHelper, combineRgb } = require('@companion-module/base')
+const choices = Array.from({ length: 8 }, (_, i) => ({ id: i + 1, label: String(i + 1) }))
+const option = (id, label) => ({ type: 'dropdown', id, label, default: 1, choices })
+class Intelix extends InstanceBase {
+	constructor(internal) { super(internal); this.routes = new Map() }
+	async init(config) { this.config = config; this.define(); this.connect() }
+	async configUpdated(config) { this.config = config; this.connect() }
+	async destroy() { this.socket?.destroy() }
+	define() {
+		this.setActionDefinitions({ route: { name: 'Route input to output', options: [option('input', 'Input'), option('output', 'Output')], callback: (a) => this.route(a.options.input, a.options.output) } })
+		this.setFeedbackDefinitions({ routed: { type: 'boolean', name: 'Output has selected input', defaultStyle: { bgcolor: combineRgb(0, 150, 0), color: combineRgb(255, 255, 255) }, options: [option('input', 'Input'), option('output', 'Output')], callback: (f) => this.routes.get(Number(f.options.output)) === Number(f.options.input) } })
+		this.setVariableDefinitions(Array.from({ length: 8 }, (_, i) => ({ variableId: `output_${i + 1}_input`, name: `Output ${i + 1}: routed input` })))
 	}
-
-	async init(config, _isFirstInit, secrets) {
-		this.config = config
-		this.secrets = secrets || {}
-		this.updateActions()
-		this.updateFeedbacks()
-		this.updateVariableDefinitions()
-		this.initConnection()
-	}
-
-	async destroy() {
-		this.client?.destroy()
-		this.client = undefined
-	}
-
-	async configUpdated(config, secrets) {
-		this.config = config
-		this.secrets = secrets || {}
-		this.initConnection()
-	}
-
-	initConnection() {
-		this.client?.destroy()
-		this.client = undefined
-		this.state.clear()
-
-		const host = String(this.config.host || '').trim()
-		const port = Number(this.config.port || 54726)
-		if (!host || !Number.isInteger(port) || port < 1 || port > 65535) {
-			this.updateStatus(InstanceStatus.BadConfig, 'Enter a valid device address and TCP port')
-			return
-		}
-
-		this.client = new DcpClient({
-			host,
-			port,
-			password: String(this.secrets.password || ''),
-			socketFactory: (targetHost, targetPort) => new TCPHelper(targetHost, targetPort, { reconnect: false }),
-			log: (level, message) => this.log(level, message),
-			status: (status, message) => this.updateStatus(status, message),
-			onState: (updates) => this.applyState(updates),
-		})
-		this.client.connect()
-	}
-
-	applyState(updates) {
-		for (const [key, value] of Object.entries(updates)) this.state.set(key, value)
-		this.setVariableValues(this.variableValues())
-		this.checkFeedbacks('connected', 'analog_input_muted', 'mix_muted', 'analog_input_fader_at_or_above', 'mix_fader_at_or_above')
-	}
-
-	variableValues() {
-		const values = {
-			device_name: this.state.get('DEVICE/NAME') || '',
-			device_model: this.state.get('DEVICE/MODELNAME') || '',
-			device_firmware: this.state.get('DEVICE/VER/SYSTEM') || '',
-			sample_rate: this.state.get('DEVICE/SAMPLE') || '',
-			mixer_mode: this.state.get('DEVICE/MIXERMODE') || '',
-			inventory_status: this.client?.inventoryStatus || 'Not read',
-			last_refresh: this.client?.lastRefresh || '',
-		}
-
-		for (let channel = 1; channel <= 4; channel++) {
-			values[`analog_input_${channel}_name`] = this.state.get(`ANLGIN/${channel}/NAME`) || ''
-			values[`analog_input_${channel}_mute`] = this.state.get(`ANLGIN/${channel}/MUTE`) || ''
-			values[`analog_input_${channel}_fader`] = this.state.get(`ANLGIN/${channel}/FADER`) || ''
-			values[`dante_input_${channel}_name`] = this.state.get(`DANTEIN/${channel}/NAME`) || ''
-			values[`mix_${channel}_name`] = this.state.get(`MIX/${channel}/NAME`) || ''
-			values[`mix_${channel}_mute`] = this.state.get(`MIX/${channel}/MUTE`) || ''
-			values[`mix_${channel}_fader`] = this.state.get(`MIX/${channel}/FADER`) || ''
-			values[`dante_output_${channel}_name`] = this.state.get(`DANTEOUT/${channel}/NAME`) || ''
-			for (let input = 1; input <= 4; input++) values[`mix_${channel}_analog_input_${input}_fader`] = this.state.get(`MIX/${channel}/ANLGIN/${input}/FADER`) || ''
-		}
-		return values
-	}
-
-	getConfigFields() {
-		return [
-			{
-				type: 'static-text',
-				id: 'safety',
-				label: 'Safety scope',
-				value:
-					'This module controls analog-input, mix and analog-to-mix faders only. It does not change trim, phantom power, routing, meter enable, network, reset or scenes.',
-				width: 12,
-			},
-			{ type: 'textinput', id: 'host', label: 'Device IP', width: 8, regex: Regex.IP },
-			{ type: 'textinput', id: 'port', label: 'TCP port', width: 4, default: '54726', regex: Regex.PORT },
-			{ type: 'secret-text', id: 'password', label: 'DCP password', default: '', width: 12 },
-		]
-	}
-
-	updateActions() {
-		UpdateActions(this)
-	}
-
-	updateFeedbacks() {
-		UpdateFeedbacks(this)
-	}
-
-	updateVariableDefinitions() {
-		UpdateVariableDefinitions(this)
-		this.setVariableValues(this.variableValues())
-	}
+	connect() { this.socket?.destroy(); const host = String(this.config.host || '').trim(), port = Number(this.config.port || 23); if (!host || !Number.isInteger(port)) return this.updateStatus(InstanceStatus.BadConfig, 'Enter IP address and port'); this.updateStatus(InstanceStatus.Connecting); this.socket = new TCPHelper(host, port); this.socket.on('connect', () => this.updateStatus(InstanceStatus.Ok)); this.socket.on('error', (e) => this.updateStatus(InstanceStatus.ConnectionFailure, e.message)) }
+	async route(input, output) { if (!this.socket?.isConnected) throw new Error('Matrix is not connected'); const i = Number(input), o = Number(output); await this.socket.sendAsync(`i${String(i).padStart(2, '0')}o${String(o).padStart(2, '0')}\r\n`); this.routes.set(o, i); this.setVariableValues({ [`output_${o}_input`]: String(i) }); this.checkFeedbacks('routed') }
+	getConfigFields() { return [{ type: 'textinput', id: 'host', label: 'Matrix IP address', regex: Regex.IP, width: 8 }, { type: 'textinput', id: 'port', label: 'Telnet port', default: '23', regex: Regex.PORT, width: 4 }] }
 }
-
-// module-base 2 loads the instance constructor as the default CommonJS export.
-module.exports = ModuleInstance
+module.exports = Intelix
