@@ -1,6 +1,6 @@
 # TASCAM DCP
 
-This initial test build monitors a TASCAM MM-4D/IN-X or MM-4D/IN-E through the documented DCP Ethernet protocol.
+This module monitors and controls the documented faders on a TASCAM MM-4D/IN-X or MM-4D/IN-E through the DCP Ethernet protocol.
 
 ## Connection
 
@@ -8,7 +8,7 @@ Enter the processor IP address, leave TCP port `54726` unless the device documen
 
 Only one DCP Ethernet controller can be connected at a time. Close TASCAM DCP CONNECT before testing. If another controller is connected, the module reports that condition and does not repeatedly retry the password.
 
-## Read-only test scope
+## Controls and monitoring
 
 The module reads:
 
@@ -18,9 +18,11 @@ The module reads:
 - names, mute state and fader state for four mix buses;
 - names for four Dante outputs.
 
-The **Refresh read-only inventory** action repeats those GET requests. Incoming DCP NOTIFY messages update known state and feedbacks.
+The **Refresh MM-4D status** action repeats those GET requests. Incoming DCP NOTIFY messages update known state and feedbacks.
 
-This build has no commands for gain, trim, phantom power, routing, meters, test tone, scenes, network settings, reset or firmware. It cannot replace Dante Controller.
+The module can set the analog-input level, mix master level and analog-input send level to a mix. Each value is limited to the protocol range of -127.0 dB to +10.0 dB, or `-INF`. Test controls on a non-production channel first.
+
+It has no commands for trim, phantom power, routing, meter enable, test tone, scenes, network settings, reset or firmware. It cannot replace Dante Controller.
 
 ## Hardware-test procedure
 

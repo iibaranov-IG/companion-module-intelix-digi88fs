@@ -1,8 +1,15 @@
 const assert = require('node:assert/strict')
 const { EventEmitter } = require('node:events')
 const test = require('node:test')
-const { InstanceStatus } = require('@companion-module/base')
+const Module = require('node:module')
+const InstanceStatus = { Ok: 'ok', ConnectionFailure: 'connection_failure' }
+const originalLoad = Module._load
+Module._load = function (request, parent, isMain) {
+	if (request === '@companion-module/base') return { InstanceStatus }
+	return originalLoad.call(this, request, parent, isMain)
+}
 const { DcpClient, MM4D_INVENTORY_KEYS, parseParameters } = require('../src/dcp-client')
+Module._load = originalLoad
 
 class FakeSocket extends EventEmitter {
 	constructor() {
@@ -104,6 +111,18 @@ test('updates state from unsolicited NOTIFY messages', () => {
 	client.destroy()
 })
 
+test('serializes a SET command, then updates state after its confirmation', async () => {
+	const { client, socket, states } = makeClient()
+	client.ready = true
+	const setting = client.set('ANLGIN/2/FADER', '-6.0')
+	await nextTick()
+	assert.equal(socket.sent.at(-1), 'SET CID:00000001 ANLGIN/2/FADER:-6.0\r\n')
+	socket.emit('data', Buffer.from('OK SET CID:00000001\r\n'))
+	await setting
+	assert.deepEqual(states.at(-1), { 'ANLGIN/2/FADER': '-6.0' })
+	client.destroy()
+})
+
 test('stops reconnecting when another controller owns the single DCP session', () => {
 	const { client, socket, statuses } = makeClient()
 	client.connect()
@@ -116,7 +135,7 @@ test('stops reconnecting when another controller owns the single DCP session', (
 })
 
 test('MM-4D inventory is read-only and excludes sensitive or mutating keys', () => {
-	assert.equal(MM4D_INVENTORY_KEYS.length, 37)
+	assert.equal(MM4D_INVENTORY_KEYS.length, 53)
 	assert.equal(
 		MM4D_INVENTORY_KEYS.every((key) => !/PHANT|GAIN|TRIM|ROUTING|NETWORK|RESET|METER/.test(key)),
 		true,

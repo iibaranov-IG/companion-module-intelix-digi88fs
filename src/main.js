@@ -58,7 +58,7 @@ class ModuleInstance extends InstanceBase {
 	applyState(updates) {
 		for (const [key, value] of Object.entries(updates)) this.state.set(key, value)
 		this.setVariableValues(this.variableValues())
-		this.checkFeedbacks('connected', 'analog_input_muted', 'mix_muted')
+		this.checkFeedbacks('connected', 'analog_input_muted', 'mix_muted', 'analog_input_fader_at_or_above', 'mix_fader_at_or_above')
 	}
 
 	variableValues() {
@@ -81,6 +81,7 @@ class ModuleInstance extends InstanceBase {
 			values[`mix_${channel}_mute`] = this.state.get(`MIX/${channel}/MUTE`) || ''
 			values[`mix_${channel}_fader`] = this.state.get(`MIX/${channel}/FADER`) || ''
 			values[`dante_output_${channel}_name`] = this.state.get(`DANTEOUT/${channel}/NAME`) || ''
+			for (let input = 1; input <= 4; input++) values[`mix_${channel}_analog_input_${input}_fader`] = this.state.get(`MIX/${channel}/ANLGIN/${input}/FADER`) || ''
 		}
 		return values
 	}
@@ -92,7 +93,7 @@ class ModuleInstance extends InstanceBase {
 				id: 'safety',
 				label: 'Safety scope',
 				value:
-					'This test build only reads device and channel state. It contains no gain, routing, phantom-power, meter-enable, network, reset, or scene commands.',
+					'This module controls analog-input, mix and analog-to-mix faders only. It does not change trim, phantom power, routing, meter enable, network, reset or scenes.',
 				width: 12,
 			},
 			{ type: 'textinput', id: 'host', label: 'Device IP', width: 8, regex: Regex.IP },

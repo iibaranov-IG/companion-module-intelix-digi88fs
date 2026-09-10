@@ -21,6 +21,9 @@ const MM4D_INVENTORY_KEYS = [
 		`MIX/${channel}/FADER`,
 		`DANTEOUT/${channel}/NAME`,
 	]),
+	...Array.from({ length: 4 }, (_, mixIndex) => mixIndex + 1).flatMap((mix) =>
+		Array.from({ length: 4 }, (_, inputIndex) => `MIX/${mix}/ANLGIN/${inputIndex + 1}/FADER`),
+	),
 ]
 
 function parseParameters(text) {
@@ -131,6 +134,12 @@ class DcpClient {
 			this.completeActive(cid, values)
 			return
 		}
+		if (line.startsWith('OK SET')) {
+			const values = parseParameters(line.slice(6))
+			const cid = values.CID
+			this.completeActive(cid, this.active?.updates || {})
+			return
+		}
 
 		if (line.startsWith('NG') || line.includes(':ERR')) {
 			const values = parseParameters(line)
@@ -173,7 +182,16 @@ class DcpClient {
 
 	get(key) {
 		return new Promise((resolve, reject) => {
-			this.queue.push({ key, resolve, reject })
+			this.queue.push({ type: 'GET', key, resolve, reject })
+			this.pump()
+		})
+	}
+
+	set(key, value) {
+		if (!/^[A-Z0-9/]+$/.test(key)) throw new Error('Invalid DCP parameter key')
+		if (!/^(?:-INF|-?\d+(?:\.\d+)?|ON|OFF)$/.test(String(value))) throw new Error('Invalid DCP parameter value')
+		return new Promise((resolve, reject) => {
+			this.queue.push({ type: 'SET', key, value: String(value), updates: { [key]: String(value) }, resolve, reject })
 			this.pump()
 		})
 	}
@@ -184,9 +202,9 @@ class DcpClient {
 		const cid = this.nextCid.toString(16).toUpperCase().padStart(8, '0')
 		this.nextCid = (this.nextCid + 1) >>> 0 || 1
 		this.active = { ...item, cid }
-		this.active.timer = setTimeout(() => this.failActive(new Error(`GET ${item.key} timed out`)), this.commandTimeoutMs)
+		this.active.timer = setTimeout(() => this.failActive(new Error(`${item.type} ${item.key} timed out`)), this.commandTimeoutMs)
 		try {
-			await this.sendRaw(`GET CID:${cid} ${item.key}\r\n`)
+			await this.sendRaw(`${item.type} CID:${cid} ${item.key}${item.type === 'SET' ? `:${item.value}` : ''}\r\n`)
 		} catch (error) {
 			this.failActive(error)
 		}

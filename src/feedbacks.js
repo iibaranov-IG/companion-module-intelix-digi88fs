@@ -34,5 +34,21 @@ module.exports = function (self) {
 			options: [channelOption('Mix')],
 			callback: (feedback) => self.state.get(`MIX/${feedback.options.channel}/MUTE`) === 'ON',
 		},
+		analog_input_fader_at_or_above: faderFeedback('Analog input level is at or above', (channel) => `ANLGIN/${channel}/FADER`),
+		mix_fader_at_or_above: faderFeedback('Mix output level is at or above', (channel) => `MIX/${channel}/FADER`),
 	})
+}
+
+function faderFeedback(name, keyForChannel) {
+	return {
+		type: 'boolean',
+		name,
+		description: 'Uses the fader state reported by the processor.',
+		defaultStyle: { bgcolor: combineRgb(0, 90, 180), color: combineRgb(255, 255, 255) },
+		options: [channelOption('Channel'), { type: 'textinput', id: 'threshold', label: 'Minimum level in dB', default: '0.0', regex: /^-?\d+(?:\.\d+)?$/ }],
+		callback: (feedback) => {
+			const value = self.state.get(keyForChannel(feedback.options.channel))
+			return value !== '-INF' && Number(value) >= Number(feedback.options.threshold)
+		},
+	}
 }

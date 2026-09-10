@@ -19,6 +19,7 @@ module.exports = function (self) {
 			{ variableId: `mix_${channel}_fader`, name: `Mix ${channel} fader` },
 			{ variableId: `dante_output_${channel}_name`, name: `Dante output ${channel} name` },
 		)
+		for (let input = 1; input <= 4; input++) variables.push({ variableId: `mix_${channel}_analog_input_${input}_fader`, name: `Mix ${channel}, analog input ${input}: level` })
 	}
 	self.setVariableDefinitions(variables)
 }
