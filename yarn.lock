@@ -297,6 +297,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"companion-module-intelix-digi88fs@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "companion-module-intelix-digi88fs@workspace:."
+  dependencies:
+    "@companion-module/base": "npm:~2.0.4"
+    "@companion-module/tools": "npm:^3.1.0"
+    prettier: "npm:^3.8.3"
+  languageName: unknown
+  linkType: soft
+
 "enhanced-resolve@npm:^5.17.1":
   version: 5.24.5
   resolution: "enhanced-resolve@npm:5.24.5"
@@ -666,16 +676,6 @@ __metadata:
   checksum: 10c0/1311f6be85a8157ac4c9147bae43e13923d2a1aae15e4aa1bd5239e4e03d2cf53cfe103dde7f35832fbb4c938b042856bc8e9a0afd29abd05e2d1608788c4fea
   languageName: node
   linkType: hard
-
-"tascam-dcp@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "tascam-dcp@workspace:."
-  dependencies:
-    "@companion-module/base": "npm:~2.0.4"
-    "@companion-module/tools": "npm:^3.1.0"
-    prettier: "npm:^3.8.3"
-  languageName: unknown
-  linkType: soft
 
 "tslib@npm:^2.8.1":
   version: 2.8.1

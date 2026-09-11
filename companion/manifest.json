@@ -4,25 +4,15 @@
 	"id": "intelix-digi88fs",
 	"name": "Intelix DIGI-88FS",
 	"shortname": "Intelix 8x8",
-	"description": "Read-only monitoring for TASCAM DCP-series processors",
-	"version": "0.0.0",
+	"description": "Routing, profile recall and output control for the Intelix DIGI-88FS 8x8 HDMI matrix",
+	"version": "0.1.0",
 	"license": "MIT",
-	"repository": "git+https://github.com/iibaranov-IG/companion-module-tascam-dcp.git",
-	"bugs": "https://github.com/iibaranov-IG/companion-module-tascam-dcp/issues",
-	"maintainers": [
-		{
-			"name": "Igor Baranov",
-			"email": "iibaranov@gmail.com"
-		}
-	],
-	"runtime": {
-		"type": "node22",
-		"api": "nodejs-ipc",
-		"apiVersion": "0.0.0",
-		"entrypoint": "../src/main.js"
-	},
+	"repository": "git+https://github.com/iibaranov-IG/companion-module-intelix-digi88fs.git",
+	"bugs": "https://github.com/iibaranov-IG/companion-module-intelix-digi88fs/issues",
+	"maintainers": [{ "name": "Igor Baranov", "email": "iibaranov@gmail.com" }],
+	"runtime": { "type": "node22", "api": "nodejs-ipc", "apiVersion": "0.0.0", "entrypoint": "../src/main.js" },
 	"legacyIds": [],
-	"manufacturer": "TASCAM",
-	"products": ["MM-4D/IN-X", "MM-4D/IN-E", "MX-8A", "ML-4D/OUT-X", "ML-4D/OUT-E", "MM-2D-X", "MM-2D-E", "AE-4D"],
-	"keywords": ["audio", "dante", "dsp", "dcp"]
+	"manufacturer": "Intelix",
+	"products": ["DIGI-88FS"],
+	"keywords": ["video", "matrix", "hdmi", "routing", "scaler"]
 }

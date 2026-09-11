@@ -1,11 +1,22 @@
-# companion-module-tascam-dcp
+# Companion module for Intelix DIGI-88FS
 
-Independent Companion integration for TASCAM DCP-series audio processors.
+Controls the Intelix DIGI-88FS 8x8 HDMI matrix through its documented Telnet/RS-232 command set.
 
-The first hardware gate targets MM-4D/IN-X firmware V1.04B0119. It implements the documented TCP login, serialized GET/SET queue with CID matching, NOTIFY state updates, a two-minute keepalive, and a constrained MM-4D inventory.
+## Implemented
 
-The module can set only three documented fader groups: analog-input level, mix master level, and analog-input level sent to a mix. It provides variables and threshold feedbacks for analog-input and mix faders. It does not alter input trim, phantom power, routing, meter enable, network settings, scenes, reset or test tone.
+- Route any input to any output, or one input to all outputs
+- Step an output to the next or previous input
+- Enable or disable video and audio per output
+- Load and save profiles 1–32
+- Read all output routes and audio/video states
+- Companion variables and feedbacks for every output
 
-The MM-4D/IN-X has analog inputs and Dante outputs; it does not have analog output channels. Its published protocol exposes meter acquisition for analog inputs, but the meter-value conversion still needs a hardware capture before it can be presented as a trustworthy dB value.
+The default Telnet port is `23`. Commands are terminated with CRLF as required by the manual. Optional Telnet credentials can be configured when authentication is enabled on the matrix.
 
-This is an independent community project and is not affiliated with or endorsed by TASCAM or TEAC Corporation.
+## Hardware status
+
+Protocol encoding and response parsing are covered by automated tests. Physical DIGI-88FS verification is still requested; test on a non-production route first.
+
+Protocol references: [DIGI-88FS manual](https://www.cs1.net/pic/intelix/DIGI-88FS_manual.pdf) and [quick start guide](https://www.cs1.net/pic/intelix/DIGI-88FS_quick_start_guide.pdf).
+
+License: MIT.
