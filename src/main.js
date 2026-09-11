@@ -78,15 +78,21 @@ class IntelixInstance extends InstanceBase {
 		this.receiveBuffer += data.toString('utf8').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '')
 		const lines = this.receiveBuffer.split(/\r?\n/)
 		this.receiveBuffer = lines.pop() || ''
+		// Telnet prompts commonly have no line terminator. Consume a complete
+		// prompt once; a following CRLF must not resend the credentials.
+		if (/^(?:enter\s+)?(?:login|username|password)\s*:\s*$/i.test(this.receiveBuffer.trim())) {
+			lines.push(this.receiveBuffer)
+			this.receiveBuffer = ''
+		}
 
 		for (const rawLine of lines) {
 			const line = rawLine.trim()
 			if (!line) continue
-			if (/^(login|username)\s*:/i.test(line) && this.config.username) {
+			if (/^(?:enter\s+)?(login|username)\s*:/i.test(line) && this.config.username) {
 				this.send(String(this.config.username)).catch((error) => this.log('warn', error.message))
 				continue
 			}
-			if (/^password\s*:/i.test(line) && this.config.password) {
+			if (/^(?:enter\s+)?password\s*:/i.test(line) && this.config.password) {
 				this.send(String(this.config.password)).catch((error) => this.log('warn', error.message))
 				continue
 			}
